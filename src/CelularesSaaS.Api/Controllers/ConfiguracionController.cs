@@ -106,6 +106,26 @@ public class ConfiguracionController : ControllerBase
         if (existe)
             throw new AppException("Ya existe un usuario con ese email.");
 
+        // Verificar límite de usuarios según plan
+        var tenant = await _db.Tenants.FindAsync(_user.TenantId)
+            ?? throw new NotFoundException("Tenant", _user.TenantId!);
+
+        var cantUsuarios = await _db.Usuarios
+            .IgnoreQueryFilters()
+            .CountAsync(u => u.TenantId == _user.TenantId && u.Activo);
+
+        var limiteUsuarios = tenant.Plan switch
+        {
+            "Prueba" => 2,
+            "Basico" => 2,
+            "Pro" => 10,
+            "Enterprise" => 999,
+            _ => 2
+        };
+
+        if (cantUsuarios >= limiteUsuarios)
+            throw new AppException($"Tu plan {tenant.Plan} permite hasta {limiteUsuarios} usuarios. Contactá soporte para actualizar tu plan.");
+
         var usuario = new Usuario
         {
             TenantId = _user.TenantId!.Value,
@@ -151,6 +171,23 @@ public class ConfiguracionController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpPatch("cambiar-password")]
+    public async Task<IActionResult> CambiarPassword([FromBody] CambiarPasswordRequest request)
+    {
+        var usuario = await _db.Usuarios.FindAsync(_user.UserId)
+            ?? throw new NotFoundException("Usuario", _user.UserId!);
+
+        if (!BCrypt.Net.BCrypt.Verify(request.PasswordActual, usuario.PasswordHash))
+            throw new AppException("La contraseña actual es incorrecta.");
+
+        if (request.NuevaPassword.Length < 6)
+            throw new AppException("La nueva contraseña debe tener al menos 6 caracteres.");
+
+        usuario.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NuevaPassword);
+        await _db.SaveChangesAsync();
+        return Ok(new { mensaje = "Contraseña actualizada correctamente." });
+    }
 }
 
 public record ActualizarNegocioRequest(
@@ -167,3 +204,5 @@ public record CrearUsuarioRequest(
     string Password,
     RolUsuario Rol
 );
+
+public record CambiarPasswordRequest(string PasswordActual, string NuevaPassword);
