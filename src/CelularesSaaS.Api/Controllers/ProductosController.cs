@@ -202,6 +202,27 @@ public class ProductosController : ControllerBase
         return Ok(new { stockNuevo = producto.Stock });
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Actualizar(Guid id, [FromBody] ActualizarProductoRequest request)
+    {
+        var producto = await _db.Productos.FindAsync(id)
+            ?? throw new NotFoundException("Producto", id);
+
+        producto.Nombre = request.Nombre;
+        producto.Descripcion = request.Descripcion;
+        producto.Marca = request.Marca;
+        producto.Modelo = request.Modelo;
+        producto.Compatibilidad = request.Compatibilidad;
+        producto.PrecioCompraARS = request.PrecioCompraARS;
+        producto.PrecioCompraUSD = request.PrecioCompraUSD;
+        producto.PrecioVentaARS = request.PrecioVentaARS;
+        producto.PrecioVentaUSD = request.PrecioVentaUSD;
+        producto.StockMinimo = request.StockMinimo;
+
+        await _db.SaveChangesAsync();
+        return Ok(MapToDto(producto));
+    }
+
     private static ProductoDto MapToDto(Producto p) => new(
         p.Id, p.Codigo, p.CodigoBarras, p.Nombre, p.Descripcion,
         p.Marca, p.Modelo, p.Compatibilidad, p.TipoProducto,
@@ -209,4 +230,17 @@ public class ProductosController : ControllerBase
         p.PrecioVentaARS, p.PrecioVentaUSD,
         p.Stock, p.StockMinimo, p.ImagenUrl,
         p.Proveedor?.Nombre);
+
+    public record ActualizarProductoRequest(
+    string Nombre,
+    string? Descripcion,
+    string? Marca,
+    string? Modelo,
+    string? Compatibilidad,
+    decimal PrecioCompraARS,
+    decimal PrecioCompraUSD,
+    decimal PrecioVentaARS,
+    decimal PrecioVentaUSD,
+    int StockMinimo
+);
 }
