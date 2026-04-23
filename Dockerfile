@@ -24,5 +24,4 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 ENV ASPNETCORE_URLS=http://+:$PORT
-
 ENTRYPOINT ["dotnet", "CelularesSaaS.Api.dll"]
