@@ -83,7 +83,9 @@ public class EquiposController : ControllerBase
     {
         var tenantId = _user.TenantId!.Value;
 
-        var existe = await _db.Equipos.AnyAsync(e => e.Imei == request.Imei);
+        var existe = await _db.Equipos
+    .IgnoreQueryFilters()
+    .AnyAsync(e => e.Imei == request.Imei && e.TenantId == tenantId && e.Activo);
         if (existe)
             throw new AppException($"Ya existe un equipo con IMEI {request.Imei}.", 409);
 
