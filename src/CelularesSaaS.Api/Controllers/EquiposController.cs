@@ -279,6 +279,20 @@ public class EquiposController : ControllerBase
         });
     }
 
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Eliminar(Guid id)
+    {
+        var equipo = await _db.Equipos.FindAsync(id)
+            ?? throw new NotFoundException("Equipo", id);
+
+        if (equipo.Estado == EstadoEquipo.Vendido)
+            throw new AppException("No podés eliminar un equipo vendido.");
+
+        equipo.Activo = false;
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
     private static EquipoDto MapToDto(Equipo e) => new(
         e.Id, e.Marca, e.Modelo, e.Capacidad, e.Color, e.Imei, e.Imei2,
         e.Condicion, e.Estado, e.Ubicacion, e.BateriaPorcentaje,
