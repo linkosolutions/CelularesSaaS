@@ -82,4 +82,26 @@ public class MigracionController : ControllerBase
             return Ok(new { error = ex.Message, inner = ex.InnerException?.Message });
         }
     }
+
+    [HttpGet("verificar")]
+    public async Task<IActionResult> Verificar([FromQuery] string email, [FromQuery] string password)
+    {
+        var usuario = await _db.Usuarios
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Email == email);
+
+        if (usuario == null)
+            return Ok(new { error = "Usuario no encontrado" });
+
+        var ok = BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash);
+
+        return Ok(new
+        {
+            email = usuario.Email,
+            activo = usuario.Activo,
+            tenantId = usuario.TenantId,
+            hashGuardado = usuario.PasswordHash,
+            passwordOk = ok,
+        });
+    }
 }
