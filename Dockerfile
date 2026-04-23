@@ -14,6 +14,8 @@ COPY ./nuget.config ./nuget.config
 RUN dotnet restore "src/CelularesSaaS.Api/CelularesSaaS.Api.csproj"
 
 COPY . .
+
+FROM build AS publish
 RUN dotnet publish "src/CelularesSaaS.Api/CelularesSaaS.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
