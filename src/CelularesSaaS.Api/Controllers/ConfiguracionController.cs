@@ -45,6 +45,39 @@ public class ConfiguracionController : ControllerBase
         });
     }
 
+    [HttpGet("uso")]
+    public async Task<ActionResult> ObtenerUso()
+    {
+        var tenant = await _db.Tenants.FindAsync(_user.TenantId)
+            ?? throw new NotFoundException("Tenant", _user.TenantId!);
+
+        var cantEquipos = await _db.Equipos
+            .IgnoreQueryFilters()
+            .CountAsync(e => e.TenantId == _user.TenantId && e.Activo);
+
+        var cantUsuarios = await _db.Usuarios
+            .IgnoreQueryFilters()
+            .CountAsync(u => u.TenantId == _user.TenantId && u.Activo);
+
+        var limites = tenant.Plan switch
+        {
+            "Prueba" => new { equipos = 50, usuarios = 2 },
+            "Basico" => new { equipos = 200, usuarios = 2 },
+            "Pro" => new { equipos = 999999, usuarios = 10 },
+            "Enterprise" => new { equipos = 999999, usuarios = 999 },
+            _ => new { equipos = 50, usuarios = 2 }
+        };
+
+        return Ok(new
+        {
+            plan = tenant.Plan,
+            equiposUsados = cantEquipos,
+            equiposLimite = limites.equipos,
+            usuariosUsados = cantUsuarios,
+            usuariosLimite = limites.usuarios,
+        });
+    }
+
     [HttpPut("negocio")]
     public async Task<ActionResult> ActualizarNegocio([FromBody] ActualizarNegocioRequest request)
     {
