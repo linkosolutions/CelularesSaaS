@@ -14,14 +14,9 @@ COPY ./nuget.config ./nuget.config
 RUN dotnet restore "src/CelularesSaaS.Api/CelularesSaaS.Api.csproj"
 
 COPY . .
-RUN dotnet build "src/CelularesSaaS.Api/CelularesSaaS.Api.csproj" -c Release -o /app/build
-
-FROM build AS publish
 RUN dotnet publish "src/CelularesSaaS.Api/CelularesSaaS.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-ENV ASPNETCORE_URLS=http://+:$PORT
 ENTRYPOINT ["dotnet", "CelularesSaaS.Api.dll"]
