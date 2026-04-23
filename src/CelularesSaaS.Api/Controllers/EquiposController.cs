@@ -93,7 +93,7 @@ public class EquiposController : ControllerBase
 
         var limiteEquipos = tenant.Plan switch
         {
-            "Prueba" => 50,
+            "Prueba" => tenant.FechaVencimientoPlan.HasValue && tenant.FechaVencimientoPlan > DateTime.UtcNow ? int.MaxValue : 50,
             "Basico" => 200,
             "Pro" => int.MaxValue,
             "Enterprise" => int.MaxValue,

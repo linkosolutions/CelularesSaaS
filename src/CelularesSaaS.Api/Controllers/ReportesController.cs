@@ -25,7 +25,14 @@ public class ReportesController : ControllerBase
     private async Task<bool> TienePlanPro()
     {
         var tenant = await _db.Tenants.FindAsync(_user.TenantId);
-        return tenant?.Plan is "Pro" or "Enterprise";
+        if (tenant == null) return false;
+
+        // Durante la prueba tienen acceso Pro completo
+        if (tenant.Plan == "Prueba" && tenant.FechaVencimientoPlan.HasValue
+            && tenant.FechaVencimientoPlan > DateTime.UtcNow)
+            return true;
+
+        return tenant.Plan is "Pro" or "Enterprise";
     }
 
     // ═══════════════════════════════════════════

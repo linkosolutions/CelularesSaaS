@@ -59,9 +59,10 @@ public class ConfiguracionController : ControllerBase
             .IgnoreQueryFilters()
             .CountAsync(u => u.TenantId == _user.TenantId && u.Activo);
 
-        var limites = tenant.Plan switch
+        var esPruebaActiva = tenant.Plan == "Prueba" && tenant.FechaVencimientoPlan.HasValue && tenant.FechaVencimientoPlan > DateTime.UtcNow;
+
+        var limites = esPruebaActiva ? new { equipos = 999999, usuarios = 999 } : tenant.Plan switch
         {
-            "Prueba" => new { equipos = 50, usuarios = 2 },
             "Basico" => new { equipos = 200, usuarios = 2 },
             "Pro" => new { equipos = 999999, usuarios = 10 },
             "Enterprise" => new { equipos = 999999, usuarios = 999 },
@@ -149,7 +150,7 @@ public class ConfiguracionController : ControllerBase
 
         var limiteUsuarios = tenant.Plan switch
         {
-            "Prueba" => 2,
+            "Prueba" => tenant.FechaVencimientoPlan.HasValue && tenant.FechaVencimientoPlan > DateTime.UtcNow ? 999 : 2,
             "Basico" => 2,
             "Pro" => 10,
             "Enterprise" => 999,
