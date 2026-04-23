@@ -45,13 +45,14 @@ public class MigracionController : ControllerBase
     {
         try
         {
-            // Crear tenant
+            await _db.Database.ExecuteSqlRawAsync(@"
+                DELETE FROM ""Usuarios"" WHERE ""TenantId"" = '11111111-0000-0000-0000-000000000001'");
+
             await _db.Database.ExecuteSqlRawAsync(@"
                 INSERT INTO ""Tenants"" (""Id"", ""Nombre"", ""NombreComercial"", ""Slug"", ""Plan"", ""Activo"", ""FechaCreacion"")
                 VALUES ('11111111-0000-0000-0000-000000000001', 'Mi Local', 'Mi Local de Celulares', 'milocal', 'Pro', true, NOW())
                 ON CONFLICT DO NOTHING");
 
-            // Crear usuario admin (password: Admin1234)
             await _db.Database.ExecuteSqlRawAsync(@"
                 INSERT INTO ""Usuarios"" (""Id"", ""TenantId"", ""NombreCompleto"", ""Email"", ""PasswordHash"", ""Rol"", ""Activo"", ""FechaCreacion"")
                 VALUES (
@@ -59,11 +60,10 @@ public class MigracionController : ControllerBase
                     '11111111-0000-0000-0000-000000000001',
                     'Administrador',
                     'admin@milocal.com',
-                    '$2a$11$2xSRef/VYL3BPVwkiAo9LOJUp.K110nTCEfDuW4Jc93nReNbNGbwe',
+                    '$2a$11$wop6Wz/1jKbbUBiCJYupLuVMYGXzlbwGjm9jAzVnoHOtRJnGxl1Z2',
                     2, true, NOW()
-                ) ON CONFLICT DO NOTHING");
+                )");
 
-            // Crear superadmin (password: Admin1234)
             await _db.Database.ExecuteSqlRawAsync(@"
                 INSERT INTO ""Usuarios"" (""Id"", ""TenantId"", ""NombreCompleto"", ""Email"", ""PasswordHash"", ""Rol"", ""Activo"", ""FechaCreacion"")
                 VALUES (
@@ -71,11 +71,11 @@ public class MigracionController : ControllerBase
                     '11111111-0000-0000-0000-000000000001',
                     'Super Admin',
                     'superadmin@sistema.com',
-                    '$2a$11$2xSRef/VYL3BPVwkiAo9LOJUp.K110nTCEfDuW4Jc93nReNbNGbwe',
+                    '$2a$11$wop6Wz/1jKbbUBiCJYupLuVMYGXzlbwGjm9jAzVnoHOtRJnGxl1Z2',
                     1, true, NOW()
-                ) ON CONFLICT DO NOTHING");
+                )");
 
-            return Ok(new { mensaje = "Setup completado. Tenant y usuarios creados." });
+            return Ok(new { mensaje = "Setup completado." });
         }
         catch (Exception ex)
         {
