@@ -251,4 +251,15 @@ public class EquiposController : ControllerBase
             historial
         });
     }
+
+    [HttpGet("debug")]
+    public IActionResult Debug()
+    {
+        return Ok(new
+        {
+            tenantId = _user.TenantId,
+            userId = _user.UserId,
+            isAuthenticated = _user.IsAuthenticated,
+        });
+    }
 }
