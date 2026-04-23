@@ -22,4 +22,7 @@ RUN dotnet publish "src/CelularesSaaS.Api/CelularesSaaS.Api.csproj" -c Release -
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:$PORT
+
 ENTRYPOINT ["dotnet", "CelularesSaaS.Api.dll"]
