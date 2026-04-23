@@ -285,4 +285,15 @@ public class EquiposController : ControllerBase
         e.PrecioCompra, e.MonedaCompra, e.PrecioVentaSugerido, e.MonedaVenta,
         e.Observaciones, e.GarantiaMeses, e.FechaIngreso,
         e.Proveedor?.Nombre, e.ClienteOrigen?.NombreCompleto);
+
+    [HttpGet("todos")]
+    public async Task<IActionResult> Todos()
+    {
+        var equipos = await _db.Equipos
+            .IgnoreQueryFilters()
+            .Where(e => e.TenantId == _user.TenantId)
+            .Select(e => new { e.Id, e.Marca, e.TenantId, e.Activo, e.Estado })
+            .ToListAsync();
+        return Ok(equipos);
+    }
 }
