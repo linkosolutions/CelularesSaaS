@@ -12,10 +12,10 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header. Ejemplo: 'Bearer {token}'",
-        Name        = "Authorization",
-        In          = ParameterLocation.Header,
-        Type        = SecuritySchemeType.ApiKey,
-        Scheme      = "Bearer"
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -30,13 +30,14 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHealthChecks();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "http://localhost:3000")
+            .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -44,17 +45,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Swagger siempre activo
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// Health check
+app.MapHealthChecks("/health");
 
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<LicenciaMiddleware>(); // ← después de auth
+app.UseMiddleware<LicenciaMiddleware>();
 app.MapControllers();
 
-app.Run();
+// Puerto dinámico para Railway
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Run($"http://0.0.0.0:{port}");
