@@ -175,8 +175,10 @@ public class ConfiguracionController : ControllerBase
     [HttpPatch("cambiar-password")]
     public async Task<IActionResult> CambiarPassword([FromBody] CambiarPasswordRequest request)
     {
-        var usuario = await _db.Usuarios.FindAsync(_user.UserId)
-            ?? throw new NotFoundException("Usuario", _user.UserId!);
+        var usuario = await _db.Usuarios
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == _user.UserId)
+            ?? throw new NotFoundException("Usuario", _user.UserId?.ToString() ?? "desconocido");
 
         if (!BCrypt.Net.BCrypt.Verify(request.PasswordActual, usuario.PasswordHash))
             throw new AppException("La contraseña actual es incorrecta.");
