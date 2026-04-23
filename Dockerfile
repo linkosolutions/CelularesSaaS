@@ -10,7 +10,7 @@ COPY ["src/CelularesSaaS.Application/CelularesSaaS.Application.csproj", "src/Cel
 COPY ["src/CelularesSaaS.Infrastructure/CelularesSaaS.Infrastructure.csproj", "src/CelularesSaaS.Infrastructure/"]
 COPY ["src/CelularesSaaS.Api/CelularesSaaS.Api.csproj", "src/CelularesSaaS.Api/"]
 
-COPY nuget.config .
+COPY ./nuget.config ./nuget.config
 RUN dotnet restore "src/CelularesSaaS.Api/CelularesSaaS.Api.csproj"
 
 COPY . .
