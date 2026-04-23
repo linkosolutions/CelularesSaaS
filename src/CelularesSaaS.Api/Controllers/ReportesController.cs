@@ -1,10 +1,10 @@
+using CelularesSaaS.Application.Common.Interfaces;
 using CelularesSaaS.Application.Reportes;
 using CelularesSaaS.Domain.Enums;
 using CelularesSaaS.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CelularesSaaS.Domain.Enums;
 
 namespace CelularesSaaS.Api.Controllers;
 
@@ -14,8 +14,19 @@ namespace CelularesSaaS.Api.Controllers;
 public class ReportesController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
+    private readonly ICurrentUserService _user;
 
-    public ReportesController(ApplicationDbContext db) => _db = db;
+    public ReportesController(ApplicationDbContext db, ICurrentUserService user)
+    {
+        _db = db;
+        _user = user;
+    }
+
+    private async Task<bool> TienePlanPro()
+    {
+        var tenant = await _db.Tenants.FindAsync(_user.TenantId);
+        return tenant?.Plan is "Pro" or "Enterprise";
+    }
 
     [HttpGet("dashboard")]
     public async Task<ActionResult<ResumenDashboardDto>> Dashboard()
@@ -97,9 +108,13 @@ public class ReportesController : ControllerBase
 
         return Ok(equipos);
     }
+
     [HttpGet("productos-mas-vendidos")]
     public async Task<ActionResult> ProductosMasVendidos([FromQuery] int dias = 30)
     {
+        if (!await TienePlanPro())
+            return StatusCode(402, new { message = "Los reportes avanzados requieren el plan Pro.", codigo = "PLAN_REQUERIDO" });
+
         var offset = TimeSpan.FromHours(-3);
         var desde = DateTimeOffset.UtcNow.ToOffset(offset).Date.AddDays(-dias);
         var desdeUtc = new DateTimeOffset(desde, offset).UtcDateTime;
@@ -153,6 +168,9 @@ public class ReportesController : ControllerBase
     [HttpGet("ganancia-por-tipo")]
     public async Task<ActionResult> GananciaPorTipo([FromQuery] int dias = 30)
     {
+        if (!await TienePlanPro())
+            return StatusCode(402, new { message = "Los reportes avanzados requieren el plan Pro.", codigo = "PLAN_REQUERIDO" });
+
         var offset = TimeSpan.FromHours(-3);
         var desde = DateTimeOffset.UtcNow.ToOffset(offset).Date.AddDays(-dias);
         var desdeUtc = new DateTimeOffset(desde, offset).UtcDateTime;

@@ -38,9 +38,9 @@ public class EquiposController : ControllerBase
         if (ubicacion.HasValue) query = query.Where(e => e.Ubicacion == ubicacion);
         if (!string.IsNullOrWhiteSpace(busqueda))
             query = query.Where(e =>
-                e.Imei.Contains(busqueda) ||
-                e.Marca.Contains(busqueda) ||
-                e.Modelo.Contains(busqueda));
+                EF.Functions.ILike(e.Imei, $"%{busqueda}%") ||
+                EF.Functions.ILike(e.Marca, $"%{busqueda}%") ||
+                EF.Functions.ILike(e.Modelo, $"%{busqueda}%"));
 
         var equipos = await query
             .OrderByDescending(e => e.FechaCreacion)
@@ -81,13 +81,35 @@ public class EquiposController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<EquipoDto>> Crear([FromBody] CrearEquipoRequest request)
     {
+        var tenantId = _user.TenantId!.Value;
+
         var existe = await _db.Equipos.AnyAsync(e => e.Imei == request.Imei);
         if (existe)
             throw new AppException($"Ya existe un equipo con IMEI {request.Imei}.", 409);
 
+        // Verificar límite de equipos según plan
+        var tenant = await _db.Tenants.FindAsync(tenantId)
+            ?? throw new NotFoundException("Tenant", tenantId);
+
+        var limiteEquipos = tenant.Plan switch
+        {
+            "Prueba" => 50,
+            "Basico" => 200,
+            "Pro" => int.MaxValue,
+            "Enterprise" => int.MaxValue,
+            _ => 50
+        };
+
+        var cantEquipos = await _db.Equipos
+            .IgnoreQueryFilters()
+            .CountAsync(e => e.TenantId == tenantId && e.Activo);
+
+        if (cantEquipos >= limiteEquipos)
+            throw new AppException($"Tu plan {tenant.Plan} permite hasta {limiteEquipos} equipos. Actualizá tu plan para continuar.");
+
         var equipo = new Equipo
         {
-            TenantId = _user.TenantId!.Value,
+            TenantId = tenantId,
             Marca = request.Marca,
             Modelo = request.Modelo,
             Capacidad = request.Capacidad,
@@ -160,13 +182,6 @@ public class EquiposController : ControllerBase
         return Ok(MapToDto(equipo));
     }
 
-    private static EquipoDto MapToDto(Equipo e) => new(
-        e.Id, e.Marca, e.Modelo, e.Capacidad, e.Color, e.Imei, e.Imei2,
-        e.Condicion, e.Estado, e.Ubicacion, e.BateriaPorcentaje,
-        e.PrecioCompra, e.MonedaCompra, e.PrecioVentaSugerido, e.MonedaVenta,
-        e.Observaciones, e.GarantiaMeses, e.FechaIngreso,
-        e.Proveedor?.Nombre, e.ClienteOrigen?.NombreCompleto);
-
     [HttpGet("{id}/historial")]
     public async Task<ActionResult> ObtenerHistorial(Guid id)
     {
@@ -208,6 +223,7 @@ public class EquiposController : ControllerBase
             historial
         });
     }
+
     [HttpGet("historial/buscar")]
     public async Task<ActionResult> BuscarHistorialPorImei([FromQuery] string imei)
     {
@@ -262,4 +278,11 @@ public class EquiposController : ControllerBase
             isAuthenticated = _user.IsAuthenticated,
         });
     }
+
+    private static EquipoDto MapToDto(Equipo e) => new(
+        e.Id, e.Marca, e.Modelo, e.Capacidad, e.Color, e.Imei, e.Imei2,
+        e.Condicion, e.Estado, e.Ubicacion, e.BateriaPorcentaje,
+        e.PrecioCompra, e.MonedaCompra, e.PrecioVentaSugerido, e.MonedaVenta,
+        e.Observaciones, e.GarantiaMeses, e.FechaIngreso,
+        e.Proveedor?.Nombre, e.ClienteOrigen?.NombreCompleto);
 }
