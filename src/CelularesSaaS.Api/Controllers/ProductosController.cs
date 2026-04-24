@@ -18,13 +18,11 @@ public class ProductosController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
     private readonly ICurrentUserService _user;
-    private readonly ICloudinaryService _cloudinary;
 
-    public ProductosController(ApplicationDbContext db, ICurrentUserService user, ICloudinaryService cloudinary)
+    public ProductosController(ApplicationDbContext db, ICurrentUserService user)
     {
         _db = db;
         _user = user;
-        _cloudinary = cloudinary;
     }
 
     [HttpGet]
@@ -135,28 +133,6 @@ public class ProductosController : ControllerBase
         await _db.SaveChangesAsync();
 
         return Ok(MapToDto(producto));
-    }
-
-    // Upload de imagen
-    [HttpPost("{id}/imagen")]
-    public async Task<ActionResult> SubirImagen(Guid id, IFormFile archivo)
-    {
-        var producto = await _db.Productos.FindAsync(id)
-            ?? throw new NotFoundException("Producto", id);
-
-        if (archivo == null || archivo.Length == 0)
-            throw new AppException("Archivo inválido.");
-
-        // Eliminar imagen anterior si existe
-        if (!string.IsNullOrEmpty(producto.ImagenPublicId))
-            await _cloudinary.EliminarImagenAsync(producto.ImagenPublicId);
-
-        var (url, publicId) = await _cloudinary.SubirImagenAsync(archivo, "productos");
-        producto.ImagenUrl = url;
-        producto.ImagenPublicId = publicId;
-
-        await _db.SaveChangesAsync();
-        return Ok(new { imagenUrl = url });
     }
 
     // Eliminar producto (soft delete)

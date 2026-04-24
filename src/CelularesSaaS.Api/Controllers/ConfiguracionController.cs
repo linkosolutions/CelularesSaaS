@@ -3,7 +3,6 @@ using CelularesSaaS.Application.Common.Interfaces;
 using CelularesSaaS.Domain.Entities;
 using CelularesSaaS.Domain.Enums;
 using CelularesSaaS.Infrastructure.Persistence;
-using CelularesSaaS.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,13 +16,11 @@ public class ConfiguracionController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
     private readonly ICurrentUserService _user;
-    private readonly ICloudinaryService _cloudinary;
 
-    public ConfiguracionController(ApplicationDbContext db, ICurrentUserService user, ICloudinaryService cloudinary)
+    public ConfiguracionController(ApplicationDbContext db, ICurrentUserService user)
     {
         _db = db;
         _user = user;
-        _cloudinary = cloudinary;
     }
 
     [HttpGet("negocio")]
@@ -40,7 +37,6 @@ public class ConfiguracionController : ControllerBase
             telefono = tenant.Telefono,
             email = tenant.Email,
             direccion = tenant.Direccion,
-            logoUrl = tenant.LogoUrl,
             plan = tenant.Plan,
         });
     }
@@ -95,22 +91,6 @@ public class ConfiguracionController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("negocio/logo")]
-    public async Task<ActionResult> SubirLogo(IFormFile archivo)
-    {
-        var tenant = await _db.Tenants.FindAsync(_user.TenantId)
-            ?? throw new NotFoundException("Tenant", _user.TenantId!);
-
-        if (archivo == null || archivo.Length == 0)
-            throw new AppException("Archivo inválido.");
-
-        var (url, publicId) = await _cloudinary.SubirImagenAsync(archivo, "logos");
-        tenant.LogoUrl = url;
-        await _db.SaveChangesAsync();
-
-        return Ok(new { logoUrl = url });
-    }
-
     [HttpGet("usuarios")]
     public async Task<ActionResult> ListarUsuarios()
     {
@@ -140,7 +120,6 @@ public class ConfiguracionController : ControllerBase
         if (existe)
             throw new AppException("Ya existe un usuario con ese email.");
 
-        // Verificar límite de usuarios según plan
         var tenant = await _db.Tenants.FindAsync(_user.TenantId)
             ?? throw new NotFoundException("Tenant", _user.TenantId!);
 
