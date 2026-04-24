@@ -27,26 +27,23 @@ public class CloudinaryService : ICloudinaryService
 
     public async Task<(string Url, string PublicId)> SubirImagenAsync(IFormFile archivo, string carpeta)
     {
-        using var ms = new MemoryStream();
-        await archivo.CopyToAsync(ms);
-        var bytes = ms.ToArray();
-        var base64 = Convert.ToBase64String(bytes);
-        var dataUri = $"data:{archivo.ContentType};base64,{base64}";
-
         var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
         var folder = $"celularessaas/{carpeta}";
-
         var toSign = $"folder={folder}&timestamp={timestamp}{_apiSecret}";
         var signature = ComputeSha1(toSign);
 
+        using var ms = new MemoryStream();
+        await archivo.CopyToAsync(ms);
+        ms.Position = 0;
+
         var content = new MultipartFormDataContent
-        {
-            { new StringContent(dataUri),   "file" },
-            { new StringContent(folder),    "folder" },
-            { new StringContent(timestamp), "timestamp" },
-            { new StringContent(_apiKey),   "api_key" },
-            { new StringContent(signature), "signature" },
-        };
+    {
+        { new StreamContent(ms),            "file",      archivo.FileName },
+        { new StringContent(folder),        "folder" },
+        { new StringContent(timestamp),     "timestamp" },
+        { new StringContent(_apiKey),       "api_key" },
+        { new StringContent(signature),     "signature" },
+    };
 
         var response = await _http.PostAsync(
             $"https://api.cloudinary.com/v1_1/{_cloudName}/image/upload", content);
