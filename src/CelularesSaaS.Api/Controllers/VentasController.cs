@@ -332,4 +332,20 @@ public class VentasController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Eliminar(Guid id)
+    {
+        var venta = await _db.Ventas
+            .Include(v => v.Items).ThenInclude(i => i.Equipo)
+            .FirstOrDefaultAsync(v => v.Id == id)
+            ?? throw new NotFoundException("Venta", id);
+
+        if (!venta.Anulada)
+            throw new AppException("Primero anulá la venta antes de eliminarla.");
+
+        _db.Ventas.Remove(venta);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
 }
