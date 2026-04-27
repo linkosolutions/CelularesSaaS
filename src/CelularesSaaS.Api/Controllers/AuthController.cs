@@ -24,7 +24,7 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         var tenant = await _db.Tenants
-            .FirstOrDefaultAsync(t => t.Slug == request.Slug && t.Activo);
+            .FirstOrDefaultAsync(t => t.Slug == request.Slug.ToLower().Trim() && t.Activo);
 
         if (tenant == null)
             throw new UnauthorizedException("Local no encontrado.");
