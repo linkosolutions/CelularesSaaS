@@ -104,4 +104,15 @@ public class MigracionController : ControllerBase
             passwordOk = ok,
         });
     }
+
+    [HttpGet("tenant/{id}")]
+    public async Task<IActionResult> ObtenerTenant(Guid id)
+    {
+        var tenant = await _db.Tenants
+            .IgnoreQueryFilters()
+            .Where(t => t.Id == id)
+            .Select(t => new { t.Id, t.Nombre, t.Slug, t.Plan })
+            .FirstOrDefaultAsync();
+        return Ok(tenant);
+    }
 }
