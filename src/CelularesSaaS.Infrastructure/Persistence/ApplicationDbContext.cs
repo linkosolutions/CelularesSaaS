@@ -31,33 +31,31 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<ReparacionHistorial> ReparacionHistoriales => Set<ReparacionHistorial>();
     public DbSet<CotizacionDolar> CotizacionesDolar => Set<CotizacionDolar>();
     public DbSet<Cita> Citas => Set<Cita>();
-
+    public DbSet<Producto> Productos => Set<Producto>();
+    public DbSet<MovimientoStockProducto> MovimientosStockProducto => Set<MovimientoStockProducto>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        // ── Query filters multi-tenant (aplican automáticamente a todas las queries) ──
-        var tenantId = _currentUser.TenantId;
-
-        modelBuilder.Entity<Usuario>().HasQueryFilter(e => e.TenantId == tenantId && e.Activo);
-        modelBuilder.Entity<Equipo>().HasQueryFilter(e => e.TenantId == tenantId && e.Activo);
-        modelBuilder.Entity<EquipoHistorial>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<Accesorio>().HasQueryFilter(e => e.TenantId == tenantId && e.Activo);
-        modelBuilder.Entity<MovimientoStockAccesorio>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<Cliente>().HasQueryFilter(e => e.TenantId == tenantId && e.Activo);
-        modelBuilder.Entity<Proveedor>().HasQueryFilter(e => e.TenantId == tenantId && e.Activo);
-        modelBuilder.Entity<Venta>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<VentaItem>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<PartePago>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<Pago>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<Reparacion>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<ReparacionHistorial>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<CotizacionDolar>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<Producto>().HasQueryFilter(e => e.TenantId == tenantId && e.Activo);
-        modelBuilder.Entity<MovimientoStockProducto>().HasQueryFilter(e => e.TenantId == tenantId);
-        modelBuilder.Entity<Cita>().HasQueryFilter(e => e.TenantId == tenantId && e.Activo);
+        modelBuilder.Entity<Usuario>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId && e.Activo);
+        modelBuilder.Entity<Equipo>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId && e.Activo);
+        modelBuilder.Entity<EquipoHistorial>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<Accesorio>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId && e.Activo);
+        modelBuilder.Entity<MovimientoStockAccesorio>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<Cliente>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId && e.Activo);
+        modelBuilder.Entity<Proveedor>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId && e.Activo);
+        modelBuilder.Entity<Venta>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<VentaItem>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<PartePago>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<Pago>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<Reparacion>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<ReparacionHistorial>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<CotizacionDolar>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<Producto>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId && e.Activo);
+        modelBuilder.Entity<MovimientoStockProducto>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<Cita>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId && e.Activo);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -75,7 +73,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 entry.Entity.FechaModificacion = now;
         }
 
-        // Auto-set TenantId
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
         {
             if (entry.Entity is ITenantEntity tenantEntity && entry.State == EntityState.Added)
@@ -83,7 +80,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                     tenantEntity.TenantId = tenantId.Value;
         }
 
-        // Auto-set auditoría
         foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
         {
             if (entry.State == EntityState.Added)
@@ -94,7 +90,4 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         return await base.SaveChangesAsync(cancellationToken);
     }
-    public DbSet<Producto> Productos => Set<Producto>();
-    public DbSet<MovimientoStockProducto> MovimientosStockProducto => Set<MovimientoStockProducto>();
-
 }
