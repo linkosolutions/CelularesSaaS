@@ -10,12 +10,14 @@ public enum EstadoEquipo
 
 public enum UbicacionEquipo { Vitrina = 1, Deposito = 2, EnTransito = 3 }
 
-public enum Moneda { ARS = 1, USD = 2 }
+public enum Moneda { ARS = 1, USD = 2, PEN = 3, BRL = 4, CLP = 5, UYU = 6, EUR = 7 }
 
 public enum FormaPago
 {
     Efectivo = 1, Transferencia = 2, Debito = 3, Credito = 4,
-    MercadoPago = 5, Dolares = 6, PartePago = 7, Cripto = 8, Otro = 99
+    MercadoPago = 5, Dolares = 6, PartePago = 7, Cripto = 8,
+    Soles = 9, Reales = 10, PesoChileno = 11, PesoUruguayo = 12, Euros = 13,
+    Otro = 99
 }
 
 public enum EstadoReparacion
