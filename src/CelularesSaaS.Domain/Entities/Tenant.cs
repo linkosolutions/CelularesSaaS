@@ -14,6 +14,6 @@ public class Tenant : BaseEntity
     public string Slug { get; set; } = null!;
     public DateTime? FechaVencimientoPlan { get; set; }
     public string Plan { get; set; } = "Basico";
-
+    public string MonedaBase { get; set; } = "ARS";
     public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
 }

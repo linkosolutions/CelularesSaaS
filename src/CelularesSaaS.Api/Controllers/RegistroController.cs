@@ -11,32 +11,27 @@ namespace CelularesSaaS.Api.Controllers;
 public class RegistroController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
-
     public RegistroController(ApplicationDbContext db) => _db = db;
 
     [HttpPost]
     public async Task<ActionResult> Registrar([FromBody] RegistroRequest request)
     {
-        // Validar email único
         var emailExiste = await _db.Usuarios
             .IgnoreQueryFilters()
             .AnyAsync(u => u.Email == request.Email);
         if (emailExiste)
             return BadRequest(new { message = "Ya existe una cuenta con ese email." });
 
-        // Generar slug único desde el nombre del local
         var slugBase = request.NombreLocal
             .ToLower()
             .Replace(" ", "-")
             .Replace("á", "a").Replace("é", "e").Replace("í", "i")
             .Replace("ó", "o").Replace("ú", "u").Replace("ñ", "n");
-
         var slug = slugBase;
         var i = 1;
         while (await _db.Tenants.AnyAsync(t => t.Slug == slug))
             slug = $"{slugBase}-{i++}";
 
-        // Crear tenant con 7 días de prueba
         var tenant = new Tenant
         {
             Nombre = request.NombreLocal,
@@ -46,11 +41,10 @@ public class RegistroController : ControllerBase
             Telefono = request.Telefono,
             Email = request.Email,
             FechaVencimientoPlan = DateTime.UtcNow.AddDays(7),
+            MonedaBase = request.MonedaBase ?? "ARS",
         };
-
         _db.Tenants.Add(tenant);
 
-        // Crear usuario admin
         var usuario = new Usuario
         {
             TenantId = tenant.Id,
@@ -59,7 +53,6 @@ public class RegistroController : ControllerBase
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Rol = RolUsuario.AdminTenant,
         };
-
         _db.Usuarios.Add(usuario);
         await _db.SaveChangesAsync();
 
@@ -76,5 +69,6 @@ public record RegistroRequest(
     string NombreContacto,
     string Email,
     string Password,
-    string? Telefono
+    string? Telefono,
+    string? MonedaBase
 );

@@ -25,7 +25,6 @@ public class AuthController : ControllerBase
     {
         var tenant = await _db.Tenants
             .FirstOrDefaultAsync(t => t.Slug == request.Slug.ToLower().Trim() && t.Activo);
-
         if (tenant == null)
             throw new UnauthorizedException("Local no encontrado.");
 
@@ -37,15 +36,13 @@ public class AuthController : ControllerBase
         if (usuario == null || !BCrypt.Net.BCrypt.Verify(request.Password, usuario.PasswordHash))
             throw new UnauthorizedException("Credenciales incorrectas.");
 
-        var accessToken  = _jwt.GenerateAccessToken(usuario);
+        var accessToken = _jwt.GenerateAccessToken(usuario);
         var refreshToken = _jwt.GenerateRefreshToken();
-
-        usuario.RefreshToken       = refreshToken;
+        usuario.RefreshToken = refreshToken;
         usuario.RefreshTokenExpira = DateTime.UtcNow.AddDays(30);
-        usuario.UltimoLogin        = DateTime.UtcNow;
+        usuario.UltimoLogin = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
-        // Calcular estado de licencia
         int? diasRestantes = tenant.FechaVencimientoPlan.HasValue
             ? (int)(tenant.FechaVencimientoPlan.Value - DateTime.UtcNow).TotalDays
             : null;
@@ -53,18 +50,10 @@ public class AuthController : ControllerBase
             && tenant.FechaVencimientoPlan.Value < DateTime.UtcNow;
 
         return Ok(new LoginResponse(
-            accessToken,
-            refreshToken,
-            DateTime.UtcNow.AddHours(8),
-            usuario.NombreCompleto,
-            usuario.Email,
-            usuario.Rol.ToString(),
-            tenant.NombreComercial,
-            tenant.Plan,
-            tenant.FechaVencimientoPlan,
-            diasRestantes,
-            licenciaVencida
-        ));
+            accessToken, refreshToken, DateTime.UtcNow.AddHours(8),
+            usuario.NombreCompleto, usuario.Email, usuario.Rol.ToString(),
+            tenant.NombreComercial, tenant.Plan, tenant.FechaVencimientoPlan,
+            diasRestantes, licenciaVencida, tenant.MonedaBase));
     }
 
     [HttpPost("refresh")]
@@ -75,14 +64,12 @@ public class AuthController : ControllerBase
             .Include(u => u.Tenant)
             .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken
                 && u.RefreshTokenExpira > DateTime.UtcNow);
-
         if (usuario == null)
             throw new UnauthorizedException("Refresh token inválido o expirado.");
 
-        var newAccess  = _jwt.GenerateAccessToken(usuario);
+        var newAccess = _jwt.GenerateAccessToken(usuario);
         var newRefresh = _jwt.GenerateRefreshToken();
-
-        usuario.RefreshToken       = newRefresh;
+        usuario.RefreshToken = newRefresh;
         usuario.RefreshTokenExpira = DateTime.UtcNow.AddDays(30);
         await _db.SaveChangesAsync();
 
@@ -94,10 +81,9 @@ public class AuthController : ControllerBase
 
         return Ok(new LoginResponse(
             newAccess, newRefresh, DateTime.UtcNow.AddHours(8),
-            usuario.NombreCompleto, usuario.Email,
-            usuario.Rol.ToString(), usuario.Tenant.NombreComercial,
-            usuario.Tenant.Plan,
-            usuario.Tenant.FechaVencimientoPlan,
-            diasRestantes, licenciaVencida));
+            usuario.NombreCompleto, usuario.Email, usuario.Rol.ToString(),
+            usuario.Tenant.NombreComercial, usuario.Tenant.Plan,
+            usuario.Tenant.FechaVencimientoPlan, diasRestantes, licenciaVencida,
+            usuario.Tenant.MonedaBase));
     }
 }

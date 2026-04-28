@@ -38,6 +38,7 @@ public class ConfiguracionController : ControllerBase
             email = tenant.Email,
             direccion = tenant.Direccion,
             plan = tenant.Plan,
+            monedaBase = tenant.MonedaBase,
         });
     }
 
@@ -86,6 +87,7 @@ public class ConfiguracionController : ControllerBase
         tenant.Telefono = request.Telefono;
         tenant.Email = request.Email;
         tenant.Direccion = request.Direccion;
+        tenant.MonedaBase = request.MonedaBase ?? "ARS";
 
         await _db.SaveChangesAsync();
         return Ok();
@@ -210,7 +212,8 @@ public record ActualizarNegocioRequest(
     string NombreComercial,
     string? Telefono,
     string? Email,
-    string? Direccion
+    string? Direccion,
+    string? MonedaBase
 );
 
 public record CrearUsuarioRequest(
