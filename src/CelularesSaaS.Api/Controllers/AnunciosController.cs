@@ -124,4 +124,4 @@ public class AnunciosController : ControllerBase
     }
 }
 
-public record AnuncioRequest(string Titulo, string Contenido, bool Activo);
+public record AnuncioRequest(string Titulo, string Contenido, bool Activo, string Tipo);

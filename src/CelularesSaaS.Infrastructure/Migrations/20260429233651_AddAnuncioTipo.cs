@@ -1,10 +1,13 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
 #nullable disable
+
 namespace CelularesSaaS.Infrastructure.Migrations
 {
-    public partial class AddAnuncios : Migration
+    /// <inheritdoc />
+    public partial class AddAnuncioTipo : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
@@ -12,12 +15,15 @@ namespace CelularesSaaS.Infrastructure.Migrations
                 table: "Anuncios",
                 type: "text",
                 nullable: false,
-                defaultValue: "Info");
+                defaultValue: "");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(name: "Tipo", table: "Anuncios");
+            migrationBuilder.DropColumn(
+                name: "Tipo",
+                table: "Anuncios");
         }
     }
 }
