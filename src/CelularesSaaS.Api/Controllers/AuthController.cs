@@ -86,4 +86,17 @@ public class AuthController : ControllerBase
             usuario.Tenant.FechaVencimientoPlan, diasRestantes, licenciaVencida,
             usuario.Tenant.MonedaBase));
     }
+
+    [HttpPost("locales")]
+    public async Task<ActionResult> ObtenerLocales([FromBody] string email)
+    {
+        var usuarios = await _db.Usuarios
+            .IgnoreQueryFilters()
+            .Include(u => u.Tenant)
+            .Where(u => u.Email == email && u.Activo && u.Tenant.Activo)
+            .Select(u => new { slug = u.Tenant.Slug, nombre = u.Tenant.NombreComercial })
+            .ToListAsync();
+
+        return Ok(usuarios);
+    }
 }
