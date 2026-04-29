@@ -45,10 +45,11 @@ public class EquiposController : ControllerBase
         var equipos = await query
             .OrderByDescending(e => e.FechaCreacion)
             .Select(e => new EquipoListadoDto(
-                e.Id, e.Marca, e.Modelo, e.Capacidad, e.Color, e.Imei,
-                e.Condicion, e.Estado, e.Ubicacion,
-                e.PrecioVentaSugerido, e.MonedaVenta, e.FechaIngreso))
-            .ToListAsync();
+    e.Id, e.Marca, e.Modelo, e.Capacidad, e.Color, e.Imei,
+    e.Condicion, e.Estado, e.Ubicacion,
+    e.BateriaPorcentaje,
+    e.PrecioVentaSugerido, e.MonedaVenta, e.FechaIngreso))
+        .ToListAsync();
 
         return Ok(equipos);
     }

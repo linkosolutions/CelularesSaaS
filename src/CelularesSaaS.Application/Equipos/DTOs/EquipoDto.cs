@@ -68,6 +68,7 @@ public record EquipoListadoDto(
     CondicionEquipo Condicion,
     EstadoEquipo Estado,
     UbicacionEquipo Ubicacion,
+    int? BateriaPorcentaje,        // ? agregá esta línea
     decimal PrecioVentaSugerido,
     Moneda MonedaVenta,
     DateTime FechaIngreso
