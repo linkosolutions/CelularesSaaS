@@ -33,6 +33,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Cita> Citas => Set<Cita>();
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<MovimientoStockProducto> MovimientosStockProducto => Set<MovimientoStockProducto>();
+    public DbSet<Anuncio> Anuncios => Set<Anuncio>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
