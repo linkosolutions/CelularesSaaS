@@ -36,6 +36,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Anuncio> Anuncios => Set<Anuncio>();
     public DbSet<Deuda> Deudas => Set<Deuda>();
     public DbSet<CuotaDeuda> CuotasDeuda => Set<CuotaDeuda>();
+    public DbSet<Compra> Compras => Set<Compra>();
+    public DbSet<CompraItem> CompraItems => Set<CompraItem>();
+    public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,6 +64,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<Cita>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId && e.Activo);
         modelBuilder.Entity<Deuda>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
         modelBuilder.Entity<CuotaDeuda>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<Compra>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+        modelBuilder.Entity<MovimientoCaja>().HasQueryFilter(e => e.TenantId == _currentUser.TenantId);
+
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

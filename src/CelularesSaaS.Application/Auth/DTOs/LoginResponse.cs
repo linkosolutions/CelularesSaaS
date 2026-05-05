@@ -15,5 +15,6 @@ public record LoginResponse(
     DateTime? FechaVencimientoPlan,
     int? DiasRestantes,
     bool LicenciaVencida,
-    string MonedaBase
+    string MonedaBase,
+    string MonedaRef
 );

@@ -12,6 +12,23 @@ namespace CelularesSaaS.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Anuncios",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Titulo = table.Column<string>(type: "text", nullable: false),
+                    Contenido = table.Column<string>(type: "text", nullable: false),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false),
+                    Tipo = table.Column<string>(type: "text", nullable: false),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Anuncios", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Clientes",
                 columns: table => new
                 {
@@ -87,6 +104,8 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     Slug = table.Column<string>(type: "text", nullable: false),
                     FechaVencimientoPlan = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Plan = table.Column<string>(type: "text", nullable: false),
+                    MonedaBase = table.Column<string>(type: "text", nullable: false),
+                    MonedaRef = table.Column<string>(type: "text", nullable: false),
                     FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false)
@@ -161,6 +180,44 @@ namespace CelularesSaaS.Infrastructure.Migrations
                         column: x => x.ProveedorId,
                         principalTable: "Proveedores",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Productos",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Codigo = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CodigoBarras = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Nombre = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Descripcion = table.Column<string>(type: "text", nullable: true),
+                    Marca = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Modelo = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
+                    Compatibilidad = table.Column<string>(type: "text", nullable: true),
+                    TipoProducto = table.Column<int>(type: "integer", nullable: false),
+                    PrecioCompraARS = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    PrecioCompraUSD = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    PrecioVentaARS = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    PrecioVentaUSD = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Stock = table.Column<int>(type: "integer", nullable: false),
+                    StockMinimo = table.Column<int>(type: "integer", nullable: false),
+                    ImagenUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ImagenPublicId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    ProveedorId = table.Column<Guid>(type: "uuid", nullable: true),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Productos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Productos_Proveedores_ProveedorId",
+                        column: x => x.ProveedorId,
+                        principalTable: "Proveedores",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -272,6 +329,7 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     MotivoAnulacion = table.Column<string>(type: "text", nullable: true),
                     CreadoPorUsuarioId = table.Column<Guid>(type: "uuid", nullable: true),
                     ModificadoPorUsuarioId = table.Column<Guid>(type: "uuid", nullable: true),
+                    EstadoVenta = table.Column<int>(type: "integer", nullable: false),
                     FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false)
@@ -319,6 +377,68 @@ namespace CelularesSaaS.Infrastructure.Migrations
                         principalTable: "Accesorios",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MovimientosStockProducto",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductoId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Cantidad = table.Column<int>(type: "integer", nullable: false),
+                    StockAnterior = table.Column<int>(type: "integer", nullable: false),
+                    StockNuevo = table.Column<int>(type: "integer", nullable: false),
+                    Motivo = table.Column<string>(type: "text", nullable: false),
+                    VentaId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ReparacionId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UsuarioId = table.Column<Guid>(type: "uuid", nullable: true),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MovimientosStockProducto", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MovimientosStockProducto_Productos_ProductoId",
+                        column: x => x.ProductoId,
+                        principalTable: "Productos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Citas",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FechaHora = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Motivo = table.Column<string>(type: "text", nullable: false),
+                    Estado = table.Column<int>(type: "integer", nullable: false),
+                    Notas = table.Column<string>(type: "text", nullable: true),
+                    ClienteId = table.Column<Guid>(type: "uuid", nullable: true),
+                    NombreContacto = table.Column<string>(type: "text", nullable: true),
+                    TelefonoContacto = table.Column<string>(type: "text", nullable: true),
+                    UsuarioAsignadoId = table.Column<Guid>(type: "uuid", nullable: true),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Citas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Citas_Clientes_ClienteId",
+                        column: x => x.ClienteId,
+                        principalTable: "Clientes",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Citas_Usuarios_UsuarioAsignadoId",
+                        column: x => x.UsuarioAsignadoId,
+                        principalTable: "Usuarios",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -409,6 +529,40 @@ namespace CelularesSaaS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Deudas",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClienteId = table.Column<Guid>(type: "uuid", nullable: true),
+                    VentaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MontoOriginal = table.Column<decimal>(type: "numeric", nullable: false),
+                    MontoRestante = table.Column<decimal>(type: "numeric", nullable: false),
+                    Interes = table.Column<decimal>(type: "numeric", nullable: false),
+                    CantidadCuotas = table.Column<int>(type: "integer", nullable: false),
+                    Estado = table.Column<string>(type: "text", nullable: false),
+                    Observaciones = table.Column<string>(type: "text", nullable: true),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Deudas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Deudas_Clientes_ClienteId",
+                        column: x => x.ClienteId,
+                        principalTable: "Clientes",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Deudas_Ventas_VentaId",
+                        column: x => x.VentaId,
+                        principalTable: "Ventas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Pagos",
                 columns: table => new
                 {
@@ -453,6 +607,7 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     CostoUnitario = table.Column<decimal>(type: "numeric", nullable: false),
                     Subtotal = table.Column<decimal>(type: "numeric", nullable: false),
                     Moneda = table.Column<int>(type: "integer", nullable: false),
+                    ProductoId = table.Column<Guid>(type: "uuid", nullable: true),
                     FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false)
@@ -469,6 +624,11 @@ namespace CelularesSaaS.Infrastructure.Migrations
                         name: "FK_VentaItems_Equipos_EquipoId",
                         column: x => x.EquipoId,
                         principalTable: "Equipos",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_VentaItems_Productos_ProductoId",
+                        column: x => x.ProductoId,
+                        principalTable: "Productos",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_VentaItems_Ventas_VentaId",
@@ -504,10 +664,63 @@ namespace CelularesSaaS.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "CuotasDeuda",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DeudaId = table.Column<Guid>(type: "uuid", nullable: false),
+                    NumeroCuota = table.Column<int>(type: "integer", nullable: false),
+                    Monto = table.Column<decimal>(type: "numeric", nullable: false),
+                    MontoPagado = table.Column<decimal>(type: "numeric", nullable: false),
+                    FechaVencimiento = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaPago = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Estado = table.Column<string>(type: "text", nullable: false),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaModificacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CuotasDeuda", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CuotasDeuda_Deudas_DeudaId",
+                        column: x => x.DeudaId,
+                        principalTable: "Deudas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Accesorios_ProveedorId",
                 table: "Accesorios",
                 column: "ProveedorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Citas_ClienteId",
+                table: "Citas",
+                column: "ClienteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Citas_UsuarioAsignadoId",
+                table: "Citas",
+                column: "UsuarioAsignadoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CuotasDeuda_DeudaId",
+                table: "CuotasDeuda",
+                column: "DeudaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deudas_ClienteId",
+                table: "Deudas",
+                column: "ClienteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Deudas_VentaId",
+                table: "Deudas",
+                column: "VentaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EquipoHistoriales_EquipoId",
@@ -547,6 +760,11 @@ namespace CelularesSaaS.Infrastructure.Migrations
                 column: "AccesorioId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MovimientosStockProducto_ProductoId",
+                table: "MovimientosStockProducto",
+                column: "ProductoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Pagos_VentaId",
                 table: "Pagos",
                 column: "VentaId");
@@ -555,6 +773,24 @@ namespace CelularesSaaS.Infrastructure.Migrations
                 name: "IX_PartePagos_ClienteId",
                 table: "PartePagos",
                 column: "ClienteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Productos_ProveedorId",
+                table: "Productos",
+                column: "ProveedorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Productos_TenantId_Codigo",
+                table: "Productos",
+                columns: new[] { "TenantId", "Codigo" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Productos_TenantId_CodigoBarras",
+                table: "Productos",
+                columns: new[] { "TenantId", "CodigoBarras" },
+                unique: true,
+                filter: "\"CodigoBarras\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reparaciones_ClienteId",
@@ -598,6 +834,11 @@ namespace CelularesSaaS.Infrastructure.Migrations
                 column: "EquipoId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_VentaItems_ProductoId",
+                table: "VentaItems",
+                column: "ProductoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_VentaItems_VentaId",
                 table: "VentaItems",
                 column: "VentaId");
@@ -624,13 +865,25 @@ namespace CelularesSaaS.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Anuncios");
+
+            migrationBuilder.DropTable(
+                name: "Citas");
+
+            migrationBuilder.DropTable(
                 name: "CotizacionesDolar");
+
+            migrationBuilder.DropTable(
+                name: "CuotasDeuda");
 
             migrationBuilder.DropTable(
                 name: "EquipoHistoriales");
 
             migrationBuilder.DropTable(
                 name: "MovimientosStockAccesorio");
+
+            migrationBuilder.DropTable(
+                name: "MovimientosStockProducto");
 
             migrationBuilder.DropTable(
                 name: "Pagos");
@@ -642,10 +895,16 @@ namespace CelularesSaaS.Infrastructure.Migrations
                 name: "VentaItems");
 
             migrationBuilder.DropTable(
+                name: "Deudas");
+
+            migrationBuilder.DropTable(
                 name: "Reparaciones");
 
             migrationBuilder.DropTable(
                 name: "Accesorios");
+
+            migrationBuilder.DropTable(
+                name: "Productos");
 
             migrationBuilder.DropTable(
                 name: "Ventas");

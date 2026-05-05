@@ -266,6 +266,20 @@ public class VentasController : ControllerBase
                 Referencia      = pagoReq.Referencia,
             });
         }
+        // Generar movimientos de caja por cada pago
+        foreach (var pagoReq in request.Pagos)
+        {
+            _db.MovimientosCaja.Add(new MovimientoCaja
+            {
+                TenantId = tenantId,
+                FormaPago = (int)pagoReq.FormaPago,
+                Moneda = (int)pagoReq.Moneda,
+                Monto = pagoReq.Monto, // positivo = ingreso
+                Concepto = $"Venta {numeroVenta}",
+                VentaId = venta.Id,
+                Fecha = venta.Fecha,
+            });
+        }
 
         _db.Ventas.Add(venta);
         await _db.SaveChangesAsync();
@@ -313,6 +327,25 @@ public class VentasController : ControllerBase
                     UsuarioId      = _user.UserId,
                 });
             }
+        }
+
+        // Revertir movimientos de caja
+        var movimientos = await _db.MovimientosCaja
+            .Where(m => m.VentaId == id)
+            .ToListAsync();
+
+        foreach (var mov in movimientos)
+        {
+            _db.MovimientosCaja.Add(new MovimientoCaja
+            {
+                TenantId = venta.TenantId,
+                FormaPago = mov.FormaPago,
+                Moneda = mov.Moneda,
+                Monto = -mov.Monto, // invertir
+                Concepto = $"Anulación venta {venta.NumeroVenta}",
+                VentaId = venta.Id,
+                Fecha = DateTime.UtcNow,
+            });
         }
 
         await _db.SaveChangesAsync();

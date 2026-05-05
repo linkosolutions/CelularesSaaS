@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CelularesSaaS.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260429232506_AddAnuncios")]
-    partial class AddAnuncios
+    [Migration("20260505212032_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -112,6 +112,10 @@ namespace CelularesSaaS.Infrastructure.Migrations
 
                     b.Property<DateTime?>("FechaModificacion")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
@@ -249,6 +253,105 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CotizacionesDolar");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.CuotaDeuda", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("DeudaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaModificacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MontoPagado")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("NumeroCuota")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeudaId");
+
+                    b.ToTable("CuotasDeuda");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Deuda", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("CantidadCuotas")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ClienteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaModificacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Interes")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MontoOriginal")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MontoRestante")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VentaId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("Deudas");
                 });
 
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.Equipo", b =>
@@ -954,6 +1057,10 @@ namespace CelularesSaaS.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("MonedaRef")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1209,6 +1316,34 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.Navigation("UsuarioAsignado");
                 });
 
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.CuotaDeuda", b =>
+                {
+                    b.HasOne("CelularesSaaS.Domain.Entities.Deuda", "Deuda")
+                        .WithMany("Cuotas")
+                        .HasForeignKey("DeudaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Deuda");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Deuda", b =>
+                {
+                    b.HasOne("CelularesSaaS.Domain.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId");
+
+                    b.HasOne("CelularesSaaS.Domain.Entities.Venta", "Venta")
+                        .WithMany()
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Venta");
+                });
+
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.Equipo", b =>
                 {
                     b.HasOne("CelularesSaaS.Domain.Entities.Cliente", "ClienteOrigen")
@@ -1405,6 +1540,11 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.Navigation("Reparaciones");
 
                     b.Navigation("Ventas");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Deuda", b =>
+                {
+                    b.Navigation("Cuotas");
                 });
 
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.Equipo", b =>

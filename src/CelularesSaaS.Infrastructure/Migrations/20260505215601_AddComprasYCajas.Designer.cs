@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CelularesSaaS.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260429233651_AddAnuncioTipo")]
-    partial class AddAnuncioTipo
+    [Migration("20260505215601_AddComprasYCajas")]
+    partial class AddComprasYCajas
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -220,6 +220,96 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.ToTable("Clientes");
                 });
 
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Compra", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("CotizacionDolar")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaModificacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Moneda")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("MontoPagado")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MontoTotal")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ProveedorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProveedorId");
+
+                    b.ToTable("Compras");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.CompraItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("CompraId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("EquipoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaModificacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Moneda")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid?>("ProductoId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompraId");
+
+                    b.HasIndex("EquipoId");
+
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("CompraItems");
+                });
+
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.CotizacionDolar", b =>
                 {
                     b.Property<Guid>("Id")
@@ -253,6 +343,105 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CotizacionesDolar");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.CuotaDeuda", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("DeudaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaModificacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MontoPagado")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("NumeroCuota")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeudaId");
+
+                    b.ToTable("CuotasDeuda");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Deuda", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("CantidadCuotas")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ClienteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaModificacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Interes")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MontoOriginal")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MontoRestante")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Observaciones")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VentaId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("Deudas");
                 });
 
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.Equipo", b =>
@@ -420,6 +609,55 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("EquipoHistoriales");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.MovimientoCaja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("CompraId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Concepto")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaModificacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("FormaPago")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Moneda")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("VentaId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompraId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("MovimientosCaja");
                 });
 
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.MovimientoStockAccesorio", b =>
@@ -958,6 +1196,10 @@ namespace CelularesSaaS.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("MonedaRef")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1213,6 +1455,66 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.Navigation("UsuarioAsignado");
                 });
 
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Compra", b =>
+                {
+                    b.HasOne("CelularesSaaS.Domain.Entities.Proveedor", "Proveedor")
+                        .WithMany()
+                        .HasForeignKey("ProveedorId");
+
+                    b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.CompraItem", b =>
+                {
+                    b.HasOne("CelularesSaaS.Domain.Entities.Compra", "Compra")
+                        .WithMany("Items")
+                        .HasForeignKey("CompraId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CelularesSaaS.Domain.Entities.Equipo", "Equipo")
+                        .WithMany()
+                        .HasForeignKey("EquipoId");
+
+                    b.HasOne("CelularesSaaS.Domain.Entities.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId");
+
+                    b.Navigation("Compra");
+
+                    b.Navigation("Equipo");
+
+                    b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.CuotaDeuda", b =>
+                {
+                    b.HasOne("CelularesSaaS.Domain.Entities.Deuda", "Deuda")
+                        .WithMany("Cuotas")
+                        .HasForeignKey("DeudaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Deuda");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Deuda", b =>
+                {
+                    b.HasOne("CelularesSaaS.Domain.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId");
+
+                    b.HasOne("CelularesSaaS.Domain.Entities.Venta", "Venta")
+                        .WithMany()
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Venta");
+                });
+
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.Equipo", b =>
                 {
                     b.HasOne("CelularesSaaS.Domain.Entities.Cliente", "ClienteOrigen")
@@ -1252,6 +1554,21 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.Navigation("Equipo");
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.MovimientoCaja", b =>
+                {
+                    b.HasOne("CelularesSaaS.Domain.Entities.Compra", "Compra")
+                        .WithMany("Movimientos")
+                        .HasForeignKey("CompraId");
+
+                    b.HasOne("CelularesSaaS.Domain.Entities.Venta", "Venta")
+                        .WithMany()
+                        .HasForeignKey("VentaId");
+
+                    b.Navigation("Compra");
+
+                    b.Navigation("Venta");
                 });
 
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.MovimientoStockAccesorio", b =>
@@ -1409,6 +1726,18 @@ namespace CelularesSaaS.Infrastructure.Migrations
                     b.Navigation("Reparaciones");
 
                     b.Navigation("Ventas");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Compra", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Movimientos");
+                });
+
+            modelBuilder.Entity("CelularesSaaS.Domain.Entities.Deuda", b =>
+                {
+                    b.Navigation("Cuotas");
                 });
 
             modelBuilder.Entity("CelularesSaaS.Domain.Entities.Equipo", b =>

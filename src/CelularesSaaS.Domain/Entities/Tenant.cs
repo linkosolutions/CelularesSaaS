@@ -16,4 +16,5 @@ public class Tenant : BaseEntity
     public string Plan { get; set; } = "Basico";
     public string MonedaBase { get; set; } = "ARS";
     public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+    public string MonedaRef { get; set; } = "USD";
 }

@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
             accessToken, refreshToken, DateTime.UtcNow.AddHours(8),
             usuario.NombreCompleto, usuario.Email, usuario.Rol.ToString(),
             tenant.NombreComercial, tenant.Plan, tenant.FechaVencimientoPlan,
-            diasRestantes, licenciaVencida, tenant.MonedaBase));
+            diasRestantes, licenciaVencida, tenant.MonedaBase, tenant.MonedaRef));
     }
 
     [HttpPost("refresh")]
@@ -84,7 +84,7 @@ public class AuthController : ControllerBase
             usuario.NombreCompleto, usuario.Email, usuario.Rol.ToString(),
             usuario.Tenant.NombreComercial, usuario.Tenant.Plan,
             usuario.Tenant.FechaVencimientoPlan, diasRestantes, licenciaVencida,
-            usuario.Tenant.MonedaBase));
+            usuario.Tenant.MonedaBase, usuario.Tenant.MonedaRef));
     }
 
     [HttpPost("locales")]

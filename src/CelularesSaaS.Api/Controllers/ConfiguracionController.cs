@@ -39,6 +39,7 @@ public class ConfiguracionController : ControllerBase
             direccion = tenant.Direccion,
             plan = tenant.Plan,
             monedaBase = tenant.MonedaBase,
+            monedaRef = tenant.MonedaRef,
         });
     }
 
@@ -213,7 +214,8 @@ public record ActualizarNegocioRequest(
     string? Telefono,
     string? Email,
     string? Direccion,
-    string? MonedaBase
+    string? MonedaBase,
+    string? MonedaRef
 );
 
 public record CrearUsuarioRequest(
